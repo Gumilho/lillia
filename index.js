@@ -1,7 +1,6 @@
 const app = require('express')();
 const fs = require('fs');
 const formidable = require('formidable');
-const mysql = require('mysql');
 
 /*
 var con = mysql.createConnection({
