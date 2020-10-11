@@ -1,45 +1,35 @@
-const app = require('express')();
-const fs = require('fs');
-const formidable = require('formidable');
+#!/usr/bin/env node
 
-/*
-var con = mysql.createConnection({
-    host: "localhost",
-    user: "gumi",
-    password: "210705tykows"
-  });
-  
-  con.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-  });
-*/
+const app = require("express")();
+const bodyParser = require("body-parser");
+const { port } = require("./config.json");
+const { markComplete, changeDate } = require("./modules/trelloListener");
 
-app.post('/fileupload', (req, res) => {
-    var form = new formidable.IncomingForm();
-    form.parse(req, function (err, fields, files) {
-        var oldpath = files.filetoupload.path;
-        var newpath = '/home/gumi/programs/web_server/' + files.filetoupload.name;
-        fs.copyFile(oldpath, newpath, function (err) {
-            if (err) throw err;
-            res.write('File uploaded and moved!');
-            res.end();
-        });
-    });
+
+app.use(bodyParser.json());
+
+app.head("/trelloListener", (req, res) => {
+    console.log(req.body);
+    res.status(200).end()
 });
 
-app.get('/',function(req,res){
-    res.sendFile(path.join(__dirname+'/index.html'));
-    //__dirname : It will resolve to your project folder.
-});
-/*
-app.get('/', (req, res) => {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write('<form action="fileupload" method="post" enctype="multipart/form-data">');
-    res.write('<input type="file" name="filetoupload"><br>');
-    res.write('<input type="submit">');
-    res.write('</form>');
-    return res.end();
-});
-*/
-app.listen(3000, console.log('Server listening in 3000'));
+app.post("/trelloListener", (req, res) => {
+    var action = req.body.action;
+    switch(action.display.translationKey){
+
+        case "action_marked_the_due_date_complete":
+            markComplete(action.data.list.id, action.data.card.id);
+            break;
+
+        case "action_changed_a_due_date":
+            changeDate(action.data.list.id, action.data.card.id, action.idMemberCreator);
+            break;
+
+        default:
+            console.log(req.body.action.data);
+
+    }
+    res.status(200).end()
+})
+
+app.listen(port, () => console.log(`Hello this is working at ${port}`))
