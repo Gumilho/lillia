@@ -1,5 +1,11 @@
 node_modules/
 credentials.json
 logger.js
-package-lock.json
 token.json
+Secret.py
+config.json
+nohup.out
+__pycache__/
+venv/
+test.*
+update_webhook.py
